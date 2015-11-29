@@ -18,7 +18,6 @@ module Class1=
         let format = "yyyy-MM-dd"
         sprintf "%s/json?lat=%s&lng=%s&date=%s" root lat lng (date.ToString(format))
 
-
     type Simple = JsonProvider<"http://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400&date=2015-11-28">
 
     let dates =
@@ -29,21 +28,25 @@ module Class1=
         dates
         |> List.map apiUrl
 
-
     let results () = 
+        // Async because we are not animals
         queries
         |> List.map Simple.AsyncLoad
         |> Async.Parallel
         |> Async.RunSynchronously
 
     let sunset () = 
+        // Type provider power
         [for s in results() do yield s.Results.Sunset]
-        |> List.zip dates 
+        |> List.zip dates
+        // Deedle series 
         |> series
 
     let sunrise ()= 
+        // Type provide power (2)
         [ for s in results () do yield s.Results.Sunrise]
         |> List.zip dates 
+        // Deedle series
         |> series
 
     let hmltPage () =
@@ -59,7 +62,7 @@ module Class1=
             |> OK
         //Start your web browser
         System.Diagnostics.Process.Start("http://localhost:8083/") |> ignore
-        // start Web Server
+        // start Suave Web Server
         result
         |> startWebServer defaultConfig
         
