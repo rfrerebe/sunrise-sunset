@@ -20,9 +20,11 @@ module Class1=
 
     type Simple = JsonProvider<"http://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400&date=2015-11-28">
 
+    let timezone = TimeZoneInfo.Local
+
     let dates =
         let day1 = DateTime(2016,1,1)
-        [for d in [0 .. 366] do yield day1.AddDays((float)d)]
+        [for d in [0 .. 110] do yield day1.AddDays(7.0 * (float)d)]
 
     let queries = 
         dates
@@ -35,16 +37,19 @@ module Class1=
         |> Async.Parallel
         |> Async.RunSynchronously
 
+    let convertToLocalTime (date : DateTime) =
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(date, DateTimeKind.Utc),timezone)
+
     let sunset () = 
         // Type provider power
-        [for s in results() do yield s.Results.Sunset]
+        [for s in results() do yield convertToLocalTime s.Results.Sunset]
         |> List.zip dates
         // Deedle series 
         |> series
 
     let sunrise ()= 
         // Type provide power (2)
-        [ for s in results () do yield s.Results.Sunrise]
+        [for s in results () do yield convertToLocalTime s.Results.Sunrise]
         |> List.zip dates 
         // Deedle series
         |> series
